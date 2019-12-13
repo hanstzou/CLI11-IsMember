@@ -28,8 +28,7 @@ int main(int argc, char* argv[])
     app.add_flag("-b,--bar", bar, "Set bar");
 
     app.add_option("-l,--level", level, "Level settings")
-        ->transform(CLI::IsMember(map, CLI::ignore_case)
-                | CLI::IsMember({Level::High, Level::Medium, Level::Low}));
+        ->transform(CLI::CheckedTransformer(map, CLI::ignore_case));
 
     CLI11_PARSE(app, argc, argv);
     std::cout << "level: " << static_cast<int>(level) << "\n" <<
