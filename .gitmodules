@@ -1,0 +1,3 @@
+[submodule "cli11"]
+	path = cli11
+	url = git@github.com:CLIUtils/cli11.git
