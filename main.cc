@@ -8,34 +8,33 @@
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 
-enum class Level
-{
+template <class E_>
+using EnumRow = std::pair<std::string, E_>;
+
+template <class E_>
+using EnumDB = boost::multi_index_container<
+    EnumRow<E_>,
+    boost::multi_index::indexed_by<
+      boost::multi_index::ordered_non_unique<
+        BOOST_MULTI_INDEX_MEMBER(EnumRow<E_>, E_, second)>>
+>;
+
+template <class E_>
+using EnumView = std::vector<EnumRow<E_>>;
+
+
+enum class Level {
     Low,
     Medium,
     High,
 };
-
-struct name{};
-struct lv{};
-
-using EnumRow = std::pair<std::string, Level>;
-
-typedef boost::multi_index_container<
-    EnumRow,
-    boost::multi_index::indexed_by<
-        boost::multi_index::ordered_unique<
-            boost::multi_index::tag<name>, BOOST_MULTI_INDEX_MEMBER(EnumRow, std::string, first)>,
-        boost::multi_index::ordered_non_unique<
-            boost::multi_index::tag<lv>, BOOST_MULTI_INDEX_MEMBER(EnumRow, Level, second)>
-    >
-> EnumMap;
-
-
-std::map<std::string, Level> map = {{"High", Level::High},
-                                    {"Medium", Level::Medium},
-                                    {"Low", Level::Low}};
-
-EnumMap orderedMap(map.begin(), map.end());
+std::map<std::string, Level> mLevels = {
+    {"Low",    Level::Low},
+    {"High",   Level::High},
+    {"Medium", Level::Medium},
+};
+EnumDB<Level> mLevelDB{mLevels.begin(), mLevels.end()};
+EnumView<Level> vLevels{mLevelDB.rbegin(), mLevelDB.rend()};
 
 int main(int argc, char* argv[])
 {
@@ -46,18 +45,10 @@ int main(int argc, char* argv[])
         std::cout << "cli v1.8.0-48-g704e169" << std::endl; },
         "print out version");
 
-    if (std::less<Level>()(a, b))
-        std::cout << (int)a << " < " << (int)b << std::endl;
-
-    orderedMap.find(std::string{"Low"});
-    for (auto p : orderedMap) {
-        std::cout << "pair: " << p.first << ", " << (int)p.second << std::endl;
-    }
     app.add_flag("-f,--foo", foo, "Set foo");
     app.add_flag("-b,--bar", bar, "Set bar");
-
     app.add_option("-l,--level", level, "Level settings")
-        ->transform(CLI::CheckedTransformer(orderedMap, CLI::ignore_case));
+        ->transform(CLI::CheckedTransformer(vLevels, CLI::ignore_case));
 
     CLI11_PARSE(app, argc, argv);
     std::cout << "level: " << static_cast<int>(level) << "\n" <<
