@@ -47,7 +47,7 @@ bar: NO
 
 This sample is built with:
 ```text
-$ clang++ -std=c++11 -I cli11/include main.cc -o cli
+$ clang++ -std=c++11 -I boost -I cli11/include main.cc -o cli
 
 $ clang++ --version
 Apple clang version 11.0.0 (clang-1100.0.33.12)
