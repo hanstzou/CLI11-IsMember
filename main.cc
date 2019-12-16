@@ -4,23 +4,22 @@
 #include <string>
 #include <CLI/CLI.hpp>
 
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/member.hpp>
-#include <boost/multi_index/ordered_index.hpp>
+struct EnumMapSorter
+{
+    template<typename T_, typename E_>
+    bool operator() (std::pair<T_, E_> a, std::pair<T_, E_> b) const
+    {
+        return a.second < b.second;
+    }
 
-template <class E_>
-using EnumRow = std::pair<std::string, E_>;
-
-template <class E_>
-using EnumDB = boost::multi_index_container<
-    EnumRow<E_>,
-    boost::multi_index::indexed_by<
-      boost::multi_index::ordered_non_unique<
-        BOOST_MULTI_INDEX_MEMBER(EnumRow<E_>, E_, second)>>
->;
-
-template <class E_>
-using EnumView = std::vector<EnumRow<E_>>;
+    template<typename T_, typename E_>
+    static std::vector<std::pair<T_, E_>> sort(std::map<T_, E_> const& map)
+    {
+        std::vector<std::pair<T_, E_>> vEs{map.begin(), map.end()};
+        std::sort(vEs.begin(), vEs.end(), EnumMapSorter{});
+        return vEs;
+    }
+};
 
 
 enum class Level {
@@ -28,13 +27,12 @@ enum class Level {
     Medium,
     High,
 };
-std::map<std::string, Level> mLevels = {
+std::map<std::string, Level> const mLevels = {
     {"Low",    Level::Low},
     {"High",   Level::High},
     {"Medium", Level::Medium},
 };
-EnumDB<Level> mLevelDB{mLevels.begin(), mLevels.end()};
-EnumView<Level> vLevels{mLevelDB.rbegin(), mLevelDB.rend()};
+auto const& vLevels = EnumMapSorter::sort(mLevels);
 
 int main(int argc, char* argv[])
 {
